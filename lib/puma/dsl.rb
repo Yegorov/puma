@@ -694,7 +694,6 @@ module Puma
       @options[:shutdown_debug] = val
     end
 
-
     # Attempts to route traffic to less-busy workers by causing them to delay
     # listening on the socket, allowing workers which are not processing any
     # requests to pick up new requests first.
@@ -702,6 +701,10 @@ module Puma
     # Only works on MRI. For all other interpreters, this setting does nothing.
     def wait_for_less_busy_worker(val=0.005)
       @options[:wait_for_less_busy_worker] = val.to_f
+    end
+
+    def reopen_logs(val=true)
+      @options[:reopen_logs] = val
     end
 
     # Control how the remote address of the connection is set. This

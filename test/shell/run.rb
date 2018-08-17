@@ -2,9 +2,9 @@ require "puma"
 require "puma/detect"
 
 TESTS_TO_RUN = if Process.respond_to?(:fork)
-  %w[t2 t3]
+  %w[t2 t3 t4]
 else
-  %w[t2]
+  %w[t2 t4]
 end
 
 results = TESTS_TO_RUN.map do |test|

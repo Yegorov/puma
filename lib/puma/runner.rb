@@ -3,6 +3,7 @@
 require 'puma/server'
 require 'puma/const'
 require 'puma/minissl/context_builder'
+require 'fcntl'
 
 module Puma
   # Generic class that is used by `Puma::Cluster` and `Puma::Single` to
@@ -90,6 +91,76 @@ module Puma
       log "* Environment: #{ENV['RACK_ENV']}"
     end
 
+    def should_reopen?(fd)
+      append_flags = File::WRONLY | File::APPEND
+
+      if fd.closed?
+        return false
+      end
+
+      is_append = (fd.fcntl(Fcntl::F_GETFL) & append_flags) == append_flags
+      if fd.stat.file? && fd.sync && is_append
+        return true
+      end
+      return false
+    rescue IOError, Errno::EBADF
+      false
+    end
+
+    def reopen_log(fd)
+      orig_stat = begin
+        fd.stat
+      rescue IOError, Errno::EBADF => e
+        STDOUT.puts "#{e.class.name} #{e.message} #{e.backtrace.join("\n")}"
+        return
+      end
+
+      # We only need files which were moved on disk
+      begin
+        new_stat = File.stat(fd.path)
+        if orig_stat.dev == new_stat.dev && orig_stat.ino == new_stat.ino
+          return
+        end
+      rescue Errno::ENOENT => e
+        STDOUT.puts "#{e.class.name} #{e.message} #{e.backtrace.join("\n")}"
+      end
+
+      STDOUT.puts "=== puma rotating log file #{fd.path} at #{Time.now} ==="
+
+      begin
+        fd.reopen(fd.path, "a")
+      rescue IOError, Errno::EBADF => e
+        STDOUT.puts "#{e.class.name} #{e.message} #{e.backtrace.join("\n")}"
+        return
+      end
+
+      # this is required to create the new file right away
+      fd.sync = true
+      fd.flush
+
+      new_stat = fd.stat
+
+      if orig_stat.uid != new_stat.uid || orig_stat.gid != new_stat.gid
+        fd.chown(orig_stat.uid, orig_stat.gid)
+      end
+    end
+
+    def reopen_logs?
+      @options[:reopen_logs]
+    end
+
+    def reopen_logs
+      fds = []
+
+      ObjectSpace.each_object(File) do |fd|
+        if should_reopen?(fd)
+          fds << fd
+        end
+      end
+
+      fds.each { |fd| reopen_log(fd) }
+    end
+
     def redirected_io?
       @options[:redirect_stdout] || @options[:redirect_stderr]
     end
@@ -106,7 +177,7 @@ module Puma
 
         STDOUT.reopen stdout, (append ? "a" : "w")
         STDOUT.sync = true
-        STDOUT.puts "=== puma startup: #{Time.now} ==="
+        STDOUT.puts "=== puma redirects stdout: #{Time.now} ==="
       end
 
       if stderr
@@ -116,7 +187,7 @@ module Puma
 
         STDERR.reopen stderr, (append ? "a" : "w")
         STDERR.sync = true
-        STDERR.puts "=== puma startup: #{Time.now} ==="
+        STDERR.puts "=== puma redirects stderr: #{Time.now} ==="
       end
     end
 
