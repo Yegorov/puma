@@ -17,7 +17,7 @@
 
 ## 4.3.4/4.3.5 and 3.12.5/3.12.6 / 2020-05-22
 * Bugfixes
-  * Explicitly include ctype.h to fix compilation warning and build error on MacOS Big Sur (#2304)
+  * Explicitly include ctype.h to fix compilation warning and build error on macOS with Xcode 12 (#2304)
 
 Each patchlevel release contains a separate security fix. We recommend simply upgrading to 4.3.5/3.12.6.
 
