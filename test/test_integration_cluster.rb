@@ -439,6 +439,29 @@ RUBY
     line = @server.gets
     assert_match(/Worker 1 \(PID: \d+\) terminating/, line)
   end
+  def test_reopen_logs
+    cli_server "-w 1 test/rackup/hello-logs.ru", config: <<RUBY
+reopen_logs
+RUBY
+    worker_pid = get_worker_pids(0, 1).first
+    puts "#{@tcp_port} #{@bind_path}"
+    connection = connect
+    FileUtils.mv("test/log.log", "test/log.log.1")
+    Process.kill :HUP, @pid
+    sleep 8
+
+    Process.kill(0, worker_pid)
+
+    connection.write "GET / HTTP/1.1\r\n\r\n"
+    true until connection.gets == "\r\n"
+
+    assert_predicate File.size('test/log.log'), :positive?, "nothing written to reopened log file"
+    stop_server
+  ensure
+    %w[test/log.log test/log.log.1 t4-stdout t4-stderr].each do |filename|
+      File.unlink filename if File.file?(filename)
+    end
+  end
 
   private
 

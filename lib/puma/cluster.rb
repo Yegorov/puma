@@ -60,7 +60,10 @@ module Puma
 
     def redirect_io
       super
+      hup_workers
+    end
 
+    def hup_workers
       @workers.each { |x| x.hup }
     end
 
