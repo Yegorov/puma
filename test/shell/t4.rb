@@ -2,11 +2,14 @@ system "rm test/log.log*"
 
 system "ruby -rrubygems -Ilib bin/pumactl -F test/shell/t4_conf.rb start"
 sleep 5
-worker_pid = `ps aux | grep puma | grep worker`.split[1]
+
+def get_worker_pid
+  `ps aux | grep puma | grep worker | grep -v grep`.split[1]
+end
+worker_pid = get_worker_pid()
 
 system "curl http://localhost:10104"
 system "mv test/log.log test/log.log.1"
-system "ps aux | grep puma"
 system "kill -HUP `cat t4-pid`"
 sleep 8
 
@@ -14,17 +17,19 @@ system "echo 'exec request 8s'"
 system "curl http://localhost:10104"
 sleep 1
 
-system "ruby -rrubygems -Ilib bin/pumactl -F test/shell/t4_conf.rb stop"
-
 def cleanup
   system "rm test/log.log*"
   system "rm t4-stdout"
   system "rm t4-stderr"
+  system "rm t4-pid"
 end
 
-if `ps aux | grep puma | grep worker`.split[1] != worker_pid
+new_pid = get_worker_pid()
+
+system "ruby -rrubygems -Ilib bin/pumactl -F test/shell/t4_conf.rb stop"
+if new_pid != worker_pid
+  puts "worker pid changed from #{worker_pid} to #{new_pid}"
   cleanup
-  puts "worker pid changed"
   exit 1
 end
 
