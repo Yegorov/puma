@@ -38,20 +38,20 @@ class TestRedirectIO < TestIntegration
     cli_server cli_args.join ' '
 
     wait_until_file_has_content @out_file_path
-    assert_match 'puma startup', File.read(@out_file_path)
+    assert_match 'puma redirects', File.read(@out_file_path)
 
     wait_until_file_has_content @err_file_path
-    assert_match 'puma startup', File.read(@err_file_path)
+    assert_match 'puma redirects', File.read(@err_file_path)
 
     log_rotate_output_files
 
     Process.kill :HUP, @server.pid
 
     wait_until_file_has_content @out_file_path
-    assert_match 'puma startup', File.read(@out_file_path)
+    assert_match 'puma redirects', File.read(@out_file_path)
 
     wait_until_file_has_content @err_file_path
-    assert_match 'puma startup', File.read(@err_file_path)
+    assert_match 'puma redirects', File.read(@err_file_path)
   end
 
   def test_sighup_redirects_io_cluster
@@ -66,20 +66,20 @@ class TestRedirectIO < TestIntegration
     cli_server cli_args.join ' '
 
     wait_until_file_has_content @out_file_path
-    assert_match 'puma startup', File.read(@out_file_path)
+    assert_match 'puma redirects', File.read(@out_file_path)
 
     wait_until_file_has_content @err_file_path
-    assert_match 'puma startup', File.read(@err_file_path)
+    assert_match 'puma redirects', File.read(@err_file_path)
 
     log_rotate_output_files
 
     Process.kill :HUP, @server.pid
 
     wait_until_file_has_content @out_file_path
-    assert_match 'puma startup', File.read(@out_file_path)
+    assert_match 'puma redirects', File.read(@out_file_path)
 
     wait_until_file_has_content @err_file_path
-    assert_match 'puma startup', File.read(@err_file_path)
+    assert_match 'puma redirects', File.read(@err_file_path)
   end
 
   private
