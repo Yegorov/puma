@@ -489,8 +489,16 @@ module Puma
 
       begin
         Signal.trap "SIGHUP" do
+          begin
+            @runner.reopen_logs if @runner.reopen_logs?
+          rescue Exception => e
+            log "*** SIGHUP: unable to reopen logs: #{e.class.name}:#{e.message}#{e.backtrace.join("\n")}"
+            raise e
+          end
           if @runner.redirected_io?
             @runner.redirect_io
+          elsif @runner.reopen_logs?
+            @runner.hup_workers
           else
             stop
           end

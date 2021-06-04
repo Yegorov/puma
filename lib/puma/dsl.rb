@@ -792,6 +792,9 @@ module Puma
       @options[:shutdown_debug] = val
     end
 
+    def reopen_logs(val=true)
+      @options[:reopen_logs] = val
+    end
 
     # Attempts to route traffic to less-busy workers by causing them to delay
     # listening on the socket, allowing workers which are not processing any
