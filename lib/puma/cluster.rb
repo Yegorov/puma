@@ -158,6 +158,11 @@ module Puma
             w.term
             log "- #{w.signal} sent to #{w.pid}..."
           end
+        else
+          if @last_ready_phase != @phase
+            @last_ready_phase = @phase
+            @launcher.config.run_hooks :after_phased_restart, @phase, @launcher.events
+          end
         end
       end
 
