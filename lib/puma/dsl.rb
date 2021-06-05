@@ -633,6 +633,21 @@ module Puma
       @options[:before_refork] << block
     end
 
+    # Code to run in the master right after all worker is started. The phase's
+    # index is passed as an argument.
+    #
+    # This can be called multiple times to add several hooks.
+    #
+    # @note Cluster mode only.
+    # @example
+    #   after_phased_restart do
+    #     puts 'After phased restart...'
+    #   end
+    def after_phased_restart(&block)
+      @options[:after_phased_restart] ||= []
+      @options[:after_phased_restart] << block
+    end
+
     # Code to run out-of-band when the worker is idle.
     # These hooks run immediately after a request has finished
     # processing and there are no busy threads on the worker.
