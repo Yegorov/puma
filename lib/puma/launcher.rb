@@ -472,7 +472,7 @@ module Puma
 
       begin
         unless Puma.jruby? # INFO in use by JVM already
-          Signal.trap "SIGINFO" do
+          Signal.trap "SIGWINCH" do
             thread_status do |name, backtrace|
               @log_writer.log(name)
               @log_writer.log(backtrace.map { |bt| "  #{bt}" })
