@@ -509,7 +509,7 @@ module Puma
 
       begin
         unless Puma.jruby? # INFO in use by JVM already
-          Signal.trap "SIGWINCH" do
+          Signal.trap "SIGPWR" do
             thread_status do |name, backtrace|
               @events.log name
               @events.log backtrace.map { |bt| "  #{bt}" }
