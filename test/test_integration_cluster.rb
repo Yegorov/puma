@@ -455,7 +455,7 @@ RUBY
     connection.write "GET / HTTP/1.1\r\n\r\n"
     true until connection.gets == "\r\n"
 
-    assert_predicate File.size('test/log.log'), :positive?, "nothing written to reopened log file"
+    assert_operator File.size('test/log.log'), :>, 0, "nothing written to reopened log file"
     stop_server
   ensure
     %w[test/log.log test/log.log.1 t4-stdout t4-stderr].each do |filename|
