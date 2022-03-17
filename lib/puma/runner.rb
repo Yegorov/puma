@@ -126,7 +126,7 @@ module Puma
       if fd.stat.file? && fd.sync && is_append
         return true
       end
-      return false
+      false
     rescue IOError, Errno::EBADF
       false
     end
